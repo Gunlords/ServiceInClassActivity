@@ -11,6 +11,7 @@ class MainActivity : AppCompatActivity() {
     private var timerService: TimerService.TimerBinder? = null
     private var isBound = false
 
+    //handler
     private val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             findViewById<TextView>(R.id.textView).text = msg.what.toString()
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val connection = object : ServiceConnection {
+       //pass the handler to service connection
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             timerService = service as TimerService.TimerBinder
             isBound = true

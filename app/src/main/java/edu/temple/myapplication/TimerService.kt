@@ -89,7 +89,7 @@ class TimerService : Service() {
             try {
                 for (i in startValue downTo 1)  {
                     Log.d("Countdown", i.toString())
-
+//time handler
                     timerHandler?.sendEmptyMessage(i)
 
                     while (paused);

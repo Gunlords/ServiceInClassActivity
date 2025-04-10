@@ -3,6 +3,8 @@ package edu.temple.myapplication
 
 import android.content.*
 import android.os.*
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val connection = object : ServiceConnection {
-       //pass the handler to service connection
+        //pass the handler to service connection
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             timerService = service as TimerService.TimerBinder
             isBound = true
@@ -61,6 +63,27 @@ class MainActivity : AppCompatActivity() {
     private fun handleStopButtonClick() {
         if (isBound) {
             timerService?.stop()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_start -> {
+                handleStartButtonClick()
+                true
+            }
+
+            R.id.action_stop -> {
+                handleStopButtonClick()
+                true
+            }
+
+            else -> false
         }
     }
 }

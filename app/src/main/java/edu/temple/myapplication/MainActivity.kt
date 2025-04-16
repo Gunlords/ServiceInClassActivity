@@ -1,17 +1,25 @@
 package edu.temple.myapplication
 
-
 import android.content.*
 import android.os.*
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import edu.temple.myapplication.R
 
 class MainActivity : AppCompatActivity() {
+
     private var timerService: TimerService.TimerBinder? = null
     private var isBound = false
 
-    //handler
+    companion object {
+        const val PREFS_NAME = "TimerPrefs"
+        const val KEY_SAVED_TIME = "saved_time"
+        const val DEFAULT_TIME = 100
+    }
+
     private val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             findViewById<TextView>(R.id.textView).text = msg.what.toString()
@@ -19,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val connection = object : ServiceConnection {
-       //pass the handler to service connection
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             timerService = service as TimerService.TimerBinder
             isBound = true
@@ -49,11 +56,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleStartButtonClick() {
+        val sharedPref = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val savedTime = sharedPref.getInt(KEY_SAVED_TIME, DEFAULT_TIME)
+
         if (isBound) {
             if (!timerService!!.isRunning) {
-                timerService?.start(10)
+                timerService?.start(savedTime)
             } else {
                 timerService?.pause()
+
+                val currentTimeText = findViewById<TextView>(R.id.textView).text.toString()
+                with(sharedPref.edit()) {
+                    putInt(KEY_SAVED_TIME, currentTimeText.toIntOrNull() ?: DEFAULT_TIME)
+                    apply()
+                }
             }
         }
     }
@@ -61,6 +77,28 @@ class MainActivity : AppCompatActivity() {
     private fun handleStopButtonClick() {
         if (isBound) {
             timerService?.stop()
+
+            val sharedPref = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                remove(KEY_SAVED_TIME)
+                apply()
+            }
+
+            findViewById<TextView>(R.id.textView).text = DEFAULT_TIME.toString()
+        }
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(connection)
+
+        val sharedPref = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        if (timerService?.paused == false) {
+            with(sharedPref.edit()) {
+                remove(KEY_SAVED_TIME)
+                apply()
+            }
         }
     }
 }
